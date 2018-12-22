@@ -1,6 +1,6 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
-const ownerID = '346629187504832513';
+const ownerID = '325165115131428864';
 
 client.on('ready', () => {
     console.log(client.user.tag + ' Ready! (' + client.user.id + ')');
@@ -42,6 +42,12 @@ client.on('message', message => {
     }
     if(command == prefix + 'setstream') {
         
+    }
+    if(command == prefix + 'say') {
+        args = message.content.split(' ').slice(1).join(' ');
+        if(!args) return message.delete();
+        message.delete();
+        message.channel.send(args);
     }
 });
 
