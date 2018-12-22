@@ -53,7 +53,6 @@ client.on('message', message => {
 
 
 client.on("message", message => {
-var prefix = "9bc"
  if (message.content.startWith(prefix + "bc")) {
   if (!message.member.hasPermission("ADMINISTRATOR"))  return;
    let args = message.content.split(" ").slice(1);
