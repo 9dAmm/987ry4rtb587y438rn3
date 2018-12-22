@@ -49,12 +49,6 @@ client.on('message', message => {
         message.delete();
         message.channel.send(args);
     }
-    if(command == prefix + 'bc') {
-	args = message.content.split(" ").slice(1);
-    var argresult = args.join(' ');
-     message.guild.members.filter(m => m.presence.status !== 'offline').forEach(m => {
-	  m.send('${argresult}\n ${m}');
-})
 
 });
 
