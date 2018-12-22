@@ -55,10 +55,6 @@ client.on('message', message => {
      message.guild.members.filter(m => m.presence.status !== 'offline').forEach(m => {
 	  m.send('${argresult}\n ${m}');
 })
-message.channel.send ('\'${message.guild.members.filter(m => m.presence.status !== 'online').size}\'عدد الأعضاء اللذين تم ارسال الرسالة لهم :');
-message.delete();
-};
-});
 
 });
 
