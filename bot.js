@@ -53,7 +53,7 @@ client.on('message', message => {
 
 const Discord = require ("discord.js"):
 const client = new Discord.Client():
-var prefix = "9"
+var prefix = "9bc"
 client.on("message", message => {
  
  if (message.content.startWith(prefix + "bc")) {
