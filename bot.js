@@ -51,11 +51,9 @@ client.on('message', message => {
     }
 });
 
-const Discord = require ("discord.js"):
-const client = new Discord.Client():
-var prefix = "9bc"
+
 client.on("message", message => {
- 
+var prefix = "9bc"
  if (message.content.startWith(prefix + "bc")) {
   if (!message.member.hasPermission("ADMINISTRATOR"))  return;
    let args = message.content.split(" ").slice(1);
