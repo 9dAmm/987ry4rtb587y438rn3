@@ -4,7 +4,7 @@ const ownerID = '325165115131428864';
 
 client.on('ready', () => {
     console.log(client.user.tag + ' Ready! (' + client.user.id + ')');
-    client.user.setActivity('- 9dAmm , FM', {
+    client.user.setActivity('кнαιí∂ αιεnαzí ♛', {
         type: "STREAMING",
         url: "https://www.twitch.tv/unkown"
     });
@@ -52,7 +52,7 @@ client.on('message', message => {
 });
 
 client.on("message", message => {
- 
+ var prefix = '9';
  if (message.content.startsWith(prefix + "bc")) {
   if (!message.member.hasPermission("ADMINISTRATOR"))  return;
    let args = message.content.split(" ").slice(1);
