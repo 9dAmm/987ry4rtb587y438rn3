@@ -73,17 +73,16 @@ client.on('message', async message => {
 			var playlist = await youtube.getPlaylist(url);
 	        var videos = await playlist.getVideos();
 	        message.channel.send(`All songs of **${playlist.title}** Added to the Queue.`);
-			for(const video of Object.values(videos)) {
-                const video2 = await youtube.getVideoByID(video.id);
-	            await handleVideo(video2, message, message.member.voiceChannel, true);
+		for(const video of Object.values(videos)) {
+                	const video2 = await youtube.getVideoByID(video.id);
+	            	await handleVideo(video2, message, message.member.voiceChannel, true);
 	        }
         }else {
             try {
                 var video = await youtube.getVideo(url);
             }catch (error) {
-                console.log(error);
                 try {
-                    var videos = await youtube.searchVideos(args, 31);
+                    var videos = await youtube.searchVideos(args);
                     if(!videos) return message.channel.send('No videos found.');
                     var video = await youtube.getVideoByID(videos[0].id);
                 }catch (error) {
@@ -94,25 +93,25 @@ client.on('message', async message => {
         }
         if(regexp.test(args[1]) || validate || url.match(/^https?:\/\/(www.youtube.com|youtube.com)\/playlist(.*)$/)) return;
         var song = {
-            id: video.id,
-		    title: video.title,
-		    url: 'https://www.youtube.com/watch?v=' + video.id,
-		    avatar: video.thumbnail,
-		    video: video,
+        	id: video.id,
+		title: video.title,
+		url: 'https://www.youtube.com/watch?v=' + video.id,
+		avatar: video.thumbnail,
+		video: video,
         };
         if(!queue) {
             queue = {
                 textChannel: message.channel,
-	            voiceChannel: voiceChannel,
+	            voiceChannel: message.member.voiceChannel,
 	            connection: null,
 	            songs: [],
 	            volume: 100,
 	            playing: true,
 	            repeat: false
             };
-	        try {
-                var connection = await voiceChannel.join();
-	            queue.connection = connection;
+	    try {
+                var connection = await message.member.voiceChannel.join();
+	        queue.connection = connection;
       	        play(message.guild, queue.songs[0], message);
             }catch (err) {
                 console.error(err);
