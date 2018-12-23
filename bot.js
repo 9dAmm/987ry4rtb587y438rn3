@@ -4,7 +4,7 @@ const ytdl = require('ytdl-core');
 const GOOGLE_API_KEY = "AIzaSyAdORXg7UZUo7sePv97JyoDqtQVi3Ll0b8";
 const YouTube = require('simple-youtube-api');
 const youtube = new YouTube(GOOGLE_API_KEY);
-const ownerID = '325165115131428864';
+const ownerID = '346629187504832513';
 var queue = {};
 
 client.on('ready', () => {
@@ -15,7 +15,7 @@ client.on('ready', () => {
     });
 });
 
-client.on('message', message => {
+client.on('message', async message => {
     if(message.channel.type !== 'text') return;
     if(message.author.id !== ownerID) return;
     
