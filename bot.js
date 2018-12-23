@@ -6,6 +6,7 @@ const YouTube = require('simple-youtube-api');
 const youtube = new YouTube(GOOGLE_API_KEY);
 const ownerID = '346629187504832513';
 var queue = {};
+var sendMessageQueue = true;
 
 client.on('ready', () => {
     console.log(client.user.tag + ' Ready! (' + client.user.id + ')');
@@ -91,7 +92,7 @@ client.on('message', async message => {
                 }
             }
         }
-        if(regexp.test(args[1]) || validate || url.match(/^https?:\/\/(www.youtube.com|youtube.com)\/playlist(.*)$/)) return;
+        if(regexp.test(args) || validate || url.match(/^https?:\/\/(www.youtube.com|youtube.com)\/playlist(.*)$/)) return;
         var song = {
         	id: video.id,
 		title: video.title,
@@ -101,7 +102,7 @@ client.on('message', async message => {
         };
         if(!queue) {
             queue = {
-                textChannel: message.channel,
+                    textChannel: message.channel,
 	            voiceChannel: message.member.voiceChannel,
 	            connection: null,
 	            songs: [],
@@ -160,21 +161,21 @@ async function handleVideo(video, message, voiceChannel, playlist = false) {
     }
 };
 function play(guild, song, message) {
-		if (!song) {
-			if(sendMessageQueue == true) queue.textChannel.send('The queue has been finished.');
-			return;
+	if (!song) {
+		if(sendMessageQueue == true) queue.textChannel.send('The queue has been finished.');
+		return;
+	}
+	const dispatcher = queue.connection.playStream(ytdl(song.url)).on('end', reason => {
+		if(queue.repeat == false) {
+			console.log(reason);
+			queue.songs.shift();
+			play(guild, queue.songs[0], message);
+		}else if (queue.repeat == true) {
+			play(guild, queue.songs[0], message);
 		}
-		const dispatcher = queue.connection.playStream(ytdl(song.url)).on('end', reason => {
-			if(queue.repeat == false) {
-				console.log(reason);
-				queue.songs.shift();
-				play(guild, queue.songs[0], message);
-			}else if (queue.repeat == true) {
-				play(guild, queue.songs[0], message);
-			}
-		}).on('error', error => console.error(error));
-    dispatcher.setVolumeLogarithmic(serverQueue.volume / 100);
-			  queue.textChannel.send(`Now playing 🎶 ${queue.songs[0].title}`);
-	    }
+	}).on('error', error => console.error(error));
+    	dispatcher.setVolumeLogarithmic(queue.volume / 100);
+	queue.textChannel.send(`Now playing 🎶 ${queue.songs[0].title}`);
+}
 
 client.login(process.env.TOKEN);
