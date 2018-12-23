@@ -31,12 +31,12 @@ client.on('message', async message => {
 
 	if (command == prefix + 'play' || command == prefix + 'p') {
 		var voiceChannel = message.member.voiceChannel;
-		if (!voiceChannel) return msg.channel.send('I\'m sorry but you need to be in a voice channel to play music!');
+		if(!voiceChannel) return message.channel.send('I\'m sorry but you need to be in a voice channel to play music!');
 		var permissions = voiceChannel.permissionsFor(message.client.user);
-		if (!permissions.has('CONNECT')) return message.channel.send('I cannot connect to your voice channel, make sure I have the proper permissions!');
-		if (!permissions.has('SPEAK')) return message.channel.send('I cannot speak in this voice channel, make sure I have the proper permissions!');
+		if(!permissions.has('CONNECT')) return message.channel.send('I cannot connect to your voice channel, make sure I have the proper permissions!');
+		if(!permissions.has('SPEAK')) return message.channel.send('I cannot speak in this voice channel, make sure I have the proper permissions!');
 		
-		if (url.match(/^https?:\/\/(www.youtube.com|youtube.com)\/playlist(.*)$/)) {
+		if(url.match(/^https?:\/\/(www.youtube.com|youtube.com)\/playlist(.*)$/)) {
 			const playlist = youtube.getPlaylist(url);
 			const videos = playlist.getVideos();
 			for(const video of Object.values(videos)) {
@@ -44,10 +44,10 @@ client.on('message', async message => {
 				await handleVideo(video2, message, voiceChannel, true);
 			}
 			return message.channel.send(`✅ Playlist: **${playlist.title}** has been added to the queue!`);
-		} else {
+		}else {
 			try {
 				var video = youtube.getVideo(url);
-			} catch (error) {
+			}catch (error) {
 				try {
 					var videos = youtube.searchVideos(searchString, 10);
 					let index = 0;
@@ -64,9 +64,9 @@ Please provide a value to select one of the search results ranging from 1-10.
 							time: 10000,
 							errors: ['time']
 						});
-					} catch (err) {
+					}catch (err) {
 						console.error(err);
-						return msg.channel.send('No or invalid value entered, cancelling video selection.');
+						return message.channel.send('No or invalid value entered, cancelling video selection.');
 					}
 					const videoIndex = parseInt(response.first().content);
 					var video = await youtube.getVideoByID(videos[videoIndex - 1].id);
