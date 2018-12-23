@@ -78,20 +78,51 @@ client.on('message', async message => {
 					return message.channel.send('No results.');
 				}
 			}
-			return handleVideo(video, message, voiceChannel);
+			var serverQueue = queue.get(message.guild.id);
+			var song = {
+				id: video.id,
+				title: video.title,
+				url: 'https://www.youtube.com/watch?v=' + video.id
+			};
+			if(!serverQueue) {
+				var queueConstruct = {
+					textChannel: message.channel,
+					voiceChannel: voiceChannel,
+					connection: null,
+					songs: [],
+					volume: 5,
+					playing: true
+				};
+				queue.set(message.guild.id, queueConstruct);
+				queueConstruct.songs.push(song);
+				try {
+					var connection = await voiceChannel.join();
+					queueConstruct.connection = connection;
+					play(message.guild, queueConstruct.songs[0]);
+				}catch (error) {
+					console.error(`I could not join the voice channel: ${error}`);
+					queue.delete(message.guild.id);
+					return message.channel.send(`I could not join the voice channel: ${error}`);
+				}
+			}else {
+				serverQueue.songs.push(song);
+				console.log(serverQueue.songs);
+				if(playlist) return undefined;
+				else return message.channel.send(`✅ **${song.title}** has been added to the queue!`);
+			}
 		}
 	}
 });
 
 async function handleVideo(video, msg, voiceChannel, playlist = false) {
-	const serverQueue = queue.get(msg.guild.id);
-	const song = {
+	var serverQueue = queue.get(msg.guild.id);
+	var song = {
 		id: video.id,
 		title: video.title,
 		url: 'https://www.youtube.com/watch?v=' + video.id
 	};
-	if (!serverQueue) {
-		const queueConstruct = {
+	if(!serverQueue) {
+		var queueConstruct = {
 			textChannel: msg.channel,
 			voiceChannel: voiceChannel,
 			connection: null,
@@ -113,7 +144,7 @@ async function handleVideo(video, msg, voiceChannel, playlist = false) {
 	} else {
 		serverQueue.songs.push(song);
 		console.log(serverQueue.songs);
-		if (playlist) return undefined;
+		if(playlist) return undefined;
 		else return msg.channel.send(`✅ **${song.title}** has been added to the queue!`);
 	}
 	return undefined;
