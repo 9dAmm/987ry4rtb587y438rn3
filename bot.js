@@ -145,21 +145,21 @@ async function handleVideo(video, message, voiceChannel, playlist = false) {
 	        playing: true,
 	        repeat: false
         };
-	    try {
+	try {
             var connection = await voiceChannel.join();
-	        queue.connection = connection;
+	    queue.connection = connection;
       	    play(message.guild, queue.songs[0], message);
         }catch (err) {
             console.error(err);
-	        queue.songs = [];
-	        return;
-	    }
+	    queue.songs = [];
+	    return;
+	}
     }else {
         queue.songs.push(song);
-	    if(playlist) return;
-	    await message.channel.send(message, `**${queue.songs[0].title}** added to Queue.`);
+	if(playlist) return;
+	await message.channel.send(message, `**${queue.songs[0].title}** added to Queue.`);
     }
-});
+};
 function play(guild, song, message) {
 		if (!song) {
 			if(sendMessageQueue == true) queue.textChannel.send('The queue has been finished.');
