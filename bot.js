@@ -24,6 +24,7 @@ client.on('message', async message => {
 	var url = args[1] ? args[1].replace(/<(.+)>/g, '$1') : '';
 	var serverQueue = queue.get(message.guild.id);
 	var command = message.content.toLowerCase().split(' ')[0];
+	var prefix = '9';
 	
 	if(command == prefix + 'play') {
 		var voiceChannel = message.member.voiceChannel;
