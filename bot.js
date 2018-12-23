@@ -11,6 +11,10 @@ client.on('warn', console.warn);
 client.on('error', console.error);
 client.on('ready', () => {
 	console.log(client.user.tag + ' Ready! (' + client.user.id + ')');
+	client.user.setActivity("- 'Khalid Alenazi ,", {
+		type: "STREAMING",
+		url: "https://www.twitch.tv/unkown"
+	});
 });
 client.on('disconnect', () => console.log('I just disconnected, making sure you know, I will reconnect now...'));
 client.on('reconnecting', () => console.log('I am reconnecting now!'));
@@ -88,8 +92,10 @@ Please provide a value to select one of the search results ranging from 1-10.
 		if (!message.member.voiceChannel) return message.channel.send('You are not in a voice channel!');
 		if (!serverQueue) return message.channel.send('There is nothing playing.');
 		if (!args[1]) return message.channel.send(`The current volume is: **${serverQueue.volume}**`);
+		if(isNaN(args[1])) return message.channel.send('Must be a number.');
+		if(args[1] < 2 || args[1] > 150) return message.channel.send('The number must be between 2 to 150.');
 		serverQueue.volume = args[1];
-		serverQueue.connection.dispatcher.setVolumeLogarithmic(args[1] / 5);
+		serverQueue.connection.dispatcher.setVolumeLogarithmic(args[1] / 90);
 		return message.channel.send(`I set the volume to: **${args[1]}**`);
 	} else if (command == prefix + 'np') {
 		if (!serverQueue) return message.channel.send('There is nothing playing.');
