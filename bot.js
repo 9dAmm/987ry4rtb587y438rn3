@@ -77,38 +77,38 @@ client.on('message', async message => {
 					console.error(err);
 					return message.channel.send('No results.');
 				}
-			}
-			var serverQueue = queue.get(message.guild.id);
-			var song = {
-				id: video.id,
-				title: video.title,
-				url: 'https://www.youtube.com/watch?v=' + video.id
-			};
-			if(!serverQueue) {
-				var queueConstruct = {
-					textChannel: message.channel,
-					voiceChannel: voiceChannel,
-					connection: null,
-					songs: [],
-					volume: 5,
-					playing: true
+				var serverQueue = queue.get(message.guild.id);
+				var song = {
+					id: video.id,
+					title: video.title,
+					url: 'https://www.youtube.com/watch?v=' + video.id
 				};
-				queue.set(message.guild.id, queueConstruct);
-				queueConstruct.songs.push(song);
-				try {
-					var connection = await voiceChannel.join();
-					queueConstruct.connection = connection;
-					play(message.guild, queueConstruct.songs[0]);
-				}catch (error) {
-					console.error(`I could not join the voice channel: ${error}`);
-					queue.delete(message.guild.id);
-					return message.channel.send(`I could not join the voice channel: ${error}`);
+				if(!serverQueue) {
+					var queueConstruct = {
+						textChannel: message.channel,
+						voiceChannel: voiceChannel,
+						connection: null,
+						songs: [],
+						volume: 5,
+						playing: true
+					};
+					queue.set(message.guild.id, queueConstruct);
+					queueConstruct.songs.push(song);
+					try {
+						var connection = await voiceChannel.join();
+						queueConstruct.connection = connection;
+						play(message.guild, queueConstruct.songs[0]);
+					}catch (error) {
+						console.error(`I could not join the voice channel: ${error}`);
+						queue.delete(message.guild.id);
+						return message.channel.send(`I could not join the voice channel: ${error}`);
+					}
+				}else {
+					serverQueue.songs.push(song);
+					console.log(serverQueue.songs);
+					if(playlist) return undefined;
+					else return message.channel.send(`✅ **${song.title}** has been added to the queue!`);
 				}
-			}else {
-				serverQueue.songs.push(song);
-				console.log(serverQueue.songs);
-				if(playlist) return undefined;
-				else return message.channel.send(`✅ **${song.title}** has been added to the queue!`);
 			}
 		}
 	}
@@ -159,7 +159,7 @@ function play(guild, song) {
 	}
 	console.log(serverQueue.songs);
 	const dispatcher = serverQueue.connection.playStream(ytdl(song.url)).on('end', reason => {
-		if (reason === 'Stream is not generating quickly enough.') console.log('Song ended.');
+		if(reason === 'Stream is not generating quickly enough.') console.log('Song ended.');
 		else console.log(reason);
 		serverQueue.songs.shift();
 		play(guild, serverQueue.songs[0]);
