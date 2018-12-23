@@ -39,18 +39,23 @@ client.on('message', async message => {
 				var video2 = youtube.getVideoByID(video.id);
 				await handleVideo(video2, message, voiceChannel, true);
 			}
-			return message.channel.send(`✅ Playlist: **${playlist.title}** has been added to the queue!`);
+			return message.channel.send(`All songs of **${playlist.title}** has been added to the Queue.`);
 		}else {
 			try {
 				var video = youtube.getVideo(url);
 			}catch (error) {
 				try {
-					message.channel.send(`Please wait ...`).then(msg => {
+					message.channel.send('Please wait ...').then(msg => {
 						var videos = youtube.searchVideos(searchString, 5);
+						if(!videos[0]) {
+							msg.edit('Cannot find any results.');
+							return;
+						}
 						let x = 0;
 						let songsSelect = new Discord.RichEmbed()
 						.setTitle(`\`${searchString}\``)
 						.setColor('RED')
+						.setDescription(videos.map(video2 => `**${index++}.** ${video2.title}`).join('\n'))
 						.setFooter('Select from 1 to 5.');
 						msg.edit({
 							embed: songsSelect
@@ -80,7 +85,6 @@ client.on('message', async message => {
 
 async function handleVideo(video, msg, voiceChannel, playlist = false) {
 	const serverQueue = queue.get(msg.guild.id);
-	console.log(video);
 	const song = {
 		id: video.id,
 		title: video.title,
@@ -96,14 +100,12 @@ async function handleVideo(video, msg, voiceChannel, playlist = false) {
 			playing: true
 		};
 		queue.set(msg.guild.id, queueConstruct);
-
 		queueConstruct.songs.push(song);
-
 		try {
 			var connection = await voiceChannel.join();
 			queueConstruct.connection = connection;
 			play(msg.guild, queueConstruct.songs[0]);
-		} catch (error) {
+		}catch (error) {
 			console.error(`I could not join the voice channel: ${error}`);
 			queue.delete(msg.guild.id);
 			return msg.channel.send(`I could not join the voice channel: ${error}`);
