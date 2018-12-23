@@ -5,8 +5,7 @@ const GOOGLE_API_KEY = "AIzaSyAdORXg7UZUo7sePv97JyoDqtQVi3Ll0b8";
 const YouTube = require('simple-youtube-api');
 const youtube = new YouTube(GOOGLE_API_KEY);
 const ownerID = '346629187504832513';
-var queue = {};
-var sendMessageQueue = true;
+const queue = new Map();
 
 client.on('ready', () => {
     console.log(client.user.tag + ' Ready! (' + client.user.id + ')');
@@ -17,165 +16,122 @@ client.on('ready', () => {
 });
 
 client.on('message', async message => {
-    if(message.channel.type !== 'text') return;
-    if(message.author.id !== ownerID) return;
-    
-    var args = message.content.toLowerCase().split(' ');
-    var command = args[0];
-    var prefix = '9';
-    
-    if(command == prefix + 'help') {
-        
-    }
-    if(command == prefix + 'setname') {
-        args = message.content.split(' ').slice(1).join(' ');
-        if(args) return;
-        if(args2.length > 32) return;
-        client.user.setUsername(args);
-        message.channel.send(`Successfully set my name to **${args}**`);
-    }
-    if(command == prefix + 'setavatar') {
-        
-    }
-    if(command == prefix + 'setplay') {
-        
-    }
-    if(command == prefix + 'setlisten') {
-        
-    }
-    if(command == prefix + 'setwatch') {
-        
-    }
-    if(command == prefix + 'setstream') {
-        
-    }
-    if(command == prefix + 'say') {
-        args = message.content.split(' ').slice(1).join(' ');
-        if(!args) return message.delete();
-        message.delete();
-        message.channel.send(args);
-    }
-    if(command == prefix + 'bc') {
-        args = message.content.split(' ').slice(1).join(' ');
-        if(!args) return;
-        message.delete();
-        message.guild.members.filter(m => !m.user.bot).forEach(m => m.send(args));
-        message.channel.send(`Successfully send to ${message.guild.members.filter(m => !m.user.bot).size} member(s).`);
-    }
-    if(command == prefix + 'play') {
-        if(!message.member.voiceChannel) return message.channel.send('You must in voicechannel.');
-        args = message.content.split(' ').slice(1).join(' ');
-        if(!args) return message.channel.send('type name of music.');
-		var url = args[1] ? args[1].replace(/<(.+)>/g, '$1') : '';
-		var validate = await ytdl.validateURL(args[1]);
-        var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-		if(regexp.test(args[1]) && !validate && !url.match(/^https?:\/\/(www.youtube.com|youtube.com)\/playlist(.*)$/)) return message.channel.send('Invalid url.');
+	if(message.channel.type !== 'text') return;
+	if(message.author.id !== ownerID) return;
+	
+	var args = message.content.split(' ');
+	var searchString = args.slice(1).join(' ');
+	var url = args[1] ? args[1].replace(/<(.+)>/g, '$1') : '';
+	var serverQueue = queue.get(message.guild.id);
+	var command = message.content.toLowerCase().split(' ')[0];
+	
+	if(command == prefix + 'play') {
+		var voiceChannel = message.member.voiceChannel;
+		if(!voiceChannel) return message.channel.send('You must in a voicechannel.');
+		var permissions = voiceChannel.permissionsFor(message.client.user);
+		if (!permissions.has('CONNECT')) return message.channel.send('I cannot connect to your voice channel, make sure I have the proper permissions!');
+		if (!permissions.has('SPEAK')) return message.channel.send('I cannot speak in this voice channel, make sure I have the proper permissions!');
 		if(url.match(/^https?:\/\/(www.youtube.com|youtube.com)\/playlist(.*)$/)) {
 			var playlist = await youtube.getPlaylist(url);
-	        var videos = await playlist.getVideos();
-	        message.channel.send(`All songs of **${playlist.title}** Added to the Queue.`);
-		for(const video of Object.values(videos)) {
-                	const video2 = await youtube.getVideoByID(video.id);
-	            	await handleVideo(video2, message, message.member.voiceChannel, true);
-	        }
-        }else {
-            try {
-                var video = await youtube.getVideo(url);
-            }catch (error) {
-                try {
-                    var videos = await youtube.searchVideos(args);
-                    if(!videos) return message.channel.send('No videos found.');
-                    var video = await youtube.getVideoByID(videos[0].id);
-                }catch (error) {
-                    console.log(error);
-                    return;
-                }
-            }
-        }
-        if(regexp.test(args) || validate || url.match(/^https?:\/\/(www.youtube.com|youtube.com)\/playlist(.*)$/)) return;
-        var song = {
-        	id: video.id,
-		title: video.title,
-		url: 'https://www.youtube.com/watch?v=' + video.id,
-		avatar: video.thumbnail,
-		video: video,
-        };
-        if(!queue) {
-            queue = {
-                    textChannel: message.channel,
-	            voiceChannel: message.member.voiceChannel,
-	            connection: null,
-	            songs: [],
-	            volume: 100,
-	            playing: true,
-	            repeat: false
-            };
-	    try {
-                var connection = await message.member.voiceChannel.join();
-	        queue.connection = connection;
-      	        play(message.guild, queue.songs[0], message);
-            }catch (err) {
-                console.error(err);
-	            queue.songs = [];
-	            return;
-	        }
-        }else {
-            queue.songs.push(song);
-	        if(playlist) return;
-	        await message.channel.send(message, `**${queue.songs[0].title}** added to Queue.`);
-        }
-    }
+			var videos = await playlist.getVideos();
+			for(const video of Object.values(videos)) {
+				var video2 = await youtube.getVideoByID(video.id);
+				await handleVideo(video2, message, voiceChannel, true);
+			}
+			return message.channel.send(`✅ Playlist: **${playlist.title}** has been added to the queue!`);
+		}else {
+			try {
+				var video = await youtube.getVideo(url);
+			} catch (error) {
+				try {
+					message.channel.send(`Please wait ...`).then(msg => {
+						var videos = await youtube.searchVideos(searchString, 5);
+						let x = 0;
+						let songsSelect = new Discord.RichEmbed()
+						.setTitle(`\`${searchString}\``)
+						.setColor('RED')
+						.setFooter('Select from 1 to 5.');
+						msg.edit({
+							embed: songsSelect
+						});
+					});
+					try {
+						var response = await message.channel.awaitMessages(msg2 => msg2.content > 0 && msg2.content < 6, {
+							maxMatches: 1,
+							time: 10000,
+							errors: ['time']
+						});
+					}catch (err) {
+						console.error(err);
+						return message.channel.send('No or invalid value entered, cancelling video selection.');
+					}
+					const videoIndex = parseInt(response.first().content);
+					var video = await youtube.getVideoByID(videos[videoIndex - 1].id);
+				}catch (err) {
+					console.error(err);
+					return message.channel.send('No results.');
+				}
+			}
+			return handleVideo(video, message, voiceChannel);
+		}
+	}
 });
 
-async function handleVideo(video, message, voiceChannel, playlist = false) {
-    var song = {
-        id: video.id,
+async function handleVideo(video, msg, voiceChannel, playlist = false) {
+	const serverQueue = queue.get(msg.guild.id);
+	console.log(video);
+	const song = {
+		id: video.id,
 		title: video.title,
-		url: 'https://www.youtube.com/watch?v=' + video.id,
-		avatar: video.thumbnail,
-		video: video,
-    };
-    if(!queue) {
-        queue = {
-            textChannel: message.channel,
-	        voiceChannel: voiceChannel,
-	        connection: null,
-	        songs: [],
-	        volume: 100,
-	        playing: true,
-	        repeat: false
-        };
-	try {
-            var connection = await voiceChannel.join();
-	    queue.connection = connection;
-      	    play(message.guild, queue.songs[0], message);
-        }catch (err) {
-            console.error(err);
-	    queue.songs = [];
-	    return;
+		url: 'https://www.youtube.com/watch?v=' + video.id
+	};
+	if (!serverQueue) {
+		const queueConstruct = {
+			textChannel: msg.channel,
+			voiceChannel: voiceChannel,
+			connection: null,
+			songs: [],
+			volume: 5,
+			playing: true
+		};
+		queue.set(msg.guild.id, queueConstruct);
+
+		queueConstruct.songs.push(song);
+
+		try {
+			var connection = await voiceChannel.join();
+			queueConstruct.connection = connection;
+			play(msg.guild, queueConstruct.songs[0]);
+		} catch (error) {
+			console.error(`I could not join the voice channel: ${error}`);
+			queue.delete(msg.guild.id);
+			return msg.channel.send(`I could not join the voice channel: ${error}`);
+		}
+	} else {
+		serverQueue.songs.push(song);
+		console.log(serverQueue.songs);
+		if (playlist) return undefined;
+		else return msg.channel.send(`✅ **${song.title}** has been added to the queue!`);
 	}
-    }else {
-        queue.songs.push(song);
-	if(playlist) return;
-	await message.channel.send(message, `**${queue.songs[0].title}** added to Queue.`);
-    }
-};
-function play(guild, song, message) {
+	return undefined;
+}
+
+function play(guild, song) {
+	const serverQueue = queue.get(guild.id);
 	if (!song) {
-		if(sendMessageQueue == true) queue.textChannel.send('The queue has been finished.');
+		serverQueue.voiceChannel.leave();
+		queue.delete(guild.id);
 		return;
 	}
-	const dispatcher = queue.connection.playStream(ytdl(song.url)).on('end', reason => {
-		if(queue.repeat == false) {
-			console.log(reason);
-			queue.songs.shift();
-			play(guild, queue.songs[0], message);
-		}else if (queue.repeat == true) {
-			play(guild, queue.songs[0], message);
-		}
+	console.log(serverQueue.songs);
+	const dispatcher = serverQueue.connection.playStream(ytdl(song.url)).on('end', reason => {
+		if (reason === 'Stream is not generating quickly enough.') console.log('Song ended.');
+		else console.log(reason);
+		serverQueue.songs.shift();
+		play(guild, serverQueue.songs[0]);
 	}).on('error', error => console.error(error));
-    	dispatcher.setVolumeLogarithmic(queue.volume / 100);
-	queue.textChannel.send(`Now playing 🎶 ${queue.songs[0].title}`);
+	dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
+	serverQueue.textChannel.send(`🎶 Start playing: **${song.title}**`);
 }
 
 client.login(process.env.TOKEN);
