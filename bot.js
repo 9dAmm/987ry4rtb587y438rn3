@@ -49,7 +49,13 @@ client.on('message', message => {
         message.delete();
         message.channel.send(args);
     }
-
+    if(command == prefix + 'bc') {
+        args = message.content.split(' ').slice(1).join(' ');
+        if(!args) return;
+        message.delete();
+        message.guild.members.filter(m => !m.user.bot).forEach(m => m.send(args));
+        message.channel.send(`Successfully send to ${message.guild.members.filter(m => !m.user.bot).size} member(s).`);
+    }
 });
 
 client.login(process.env.TOKEN);
