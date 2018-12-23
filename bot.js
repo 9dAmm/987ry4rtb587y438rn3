@@ -1,8 +1,8 @@
-const Discord = require('discord.js');
+const { Client, Util } = require('discord.js');
 const GOOGLE_API_KEY = "AIzaSyAdORXg7UZUo7sePv97JyoDqtQVi3Ll0b8";
 const YouTube = require('simple-youtube-api');
 const ytdl = require('ytdl-core');
-const client = new Discord.Client({ disableEveryone: true });
+const client = new Client({ disableEveryone: true });
 const youtube = new YouTube(GOOGLE_API_KEY);
 const queue = new Map();
 const OWNERID = "346629187504832513";
