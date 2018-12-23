@@ -32,20 +32,20 @@ client.on('message', async message => {
 		if (!permissions.has('CONNECT')) return message.channel.send('I cannot connect to your voice channel, make sure I have the proper permissions!');
 		if (!permissions.has('SPEAK')) return message.channel.send('I cannot speak in this voice channel, make sure I have the proper permissions!');
 		if(url.match(/^https?:\/\/(www.youtube.com|youtube.com)\/playlist(.*)$/)) {
-			var playlist = await youtube.getPlaylist(url);
-			var videos = await playlist.getVideos();
+			var playlist = youtube.getPlaylist(url);
+			var videos = playlist.getVideos();
 			for(const video of Object.values(videos)) {
-				var video2 = await youtube.getVideoByID(video.id);
+				var video2 = youtube.getVideoByID(video.id);
 				await handleVideo(video2, message, voiceChannel, true);
 			}
 			return message.channel.send(`✅ Playlist: **${playlist.title}** has been added to the queue!`);
 		}else {
 			try {
-				var video = await youtube.getVideo(url);
-			} catch (error) {
+				var video = youtube.getVideo(url);
+			}catch (error) {
 				try {
 					message.channel.send(`Please wait ...`).then(msg => {
-						var videos = await youtube.searchVideos(searchString, 5);
+						var videos = youtube.searchVideos(searchString, 5);
 						let x = 0;
 						let songsSelect = new Discord.RichEmbed()
 						.setTitle(`\`${searchString}\``)
@@ -56,7 +56,7 @@ client.on('message', async message => {
 						});
 					});
 					try {
-						var response = await message.channel.awaitMessages(msg2 => msg2.content > 0 && msg2.content < 6, {
+						var response = message.channel.awaitMessages(msg2 => msg2.content > 0 && msg2.content < 6, {
 							maxMatches: 1,
 							time: 10000,
 							errors: ['time']
@@ -66,7 +66,7 @@ client.on('message', async message => {
 						return message.channel.send('No or invalid value entered, cancelling video selection.');
 					}
 					const videoIndex = parseInt(response.first().content);
-					var video = await youtube.getVideoByID(videos[videoIndex - 1].id);
+					var video = youtube.getVideoByID(videos[videoIndex - 1].id);
 				}catch (err) {
 					console.error(err);
 					return message.channel.send('No results.');
