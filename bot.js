@@ -1,6 +1,6 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
-const ownerID = ('325165115131428864');
+const ownerID = '325165115131428864';
 
 client.on('ready', () => {
     console.log(client.user.tag + ' Ready! (' + client.user.id + ')');
