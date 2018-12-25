@@ -4,7 +4,7 @@ const ownerID = '325165115131428864';
 
 client.on('ready', () => {
     console.log(client.user.tag + ' Ready! (' + client.user.id + ')');
-    client.user.setActivity('?????? ???n?z? ?', {
+    client.user.setActivity('Khalid Alenazi', {
         type: "STREAMING",
         url: "https://www.twitch.tv/unkown"
     });
