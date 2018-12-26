@@ -6,7 +6,7 @@ client.on('ready', () => {
     console.log(client.user.tag + ' Ready! (' + client.user.id + ')');
     client.user.setActivity('Khalid Alenazi', {
         type: "STREAMING",
-        url: "https://www.twitch.tv/unkown"
+        url: "https://www.twitch.tv/khalid-alenazi"
     });
 });
 
@@ -22,7 +22,11 @@ client.on('message', message => {
         
     }
     if(command == prefix + 'setname') {
-        
+        args = message.content.split(' ').slice(1).join(' ');
+        if(!args) return;
+        if(args.length > 32) return;
+        client.user.setUsername(args);
+        message.channel.send(`Successfully set my name to ${args}`);
     }
     if(command == prefix + 'setavatar') {
         
@@ -40,9 +44,11 @@ client.on('message', message => {
         
     }
     if(command == prefix + 'say') {
-        
+        args = message.content.split(' ').slice(1).join(' ');
+        if(!args) return message.delete();
+        message.delete();
+        message.channel.send(args);
     }
-	if(command == prefix + 'bc') {
-		
-	}
 });
+
+client.login(process.env.TOKEN);
